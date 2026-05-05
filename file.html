@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer To-Do List Application</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Monaco', 'Courier New', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 900px;
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-btn:hover {
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Tasks Tab */
+        .input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        #taskInput {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        #taskInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .priority-select {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #addBtn {
+            padding: 12px 25px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        #addBtn:hover {
+            background: #5568d3;
+        }
+
+        #taskList {
+            list-style: none;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+            border-left: 5px solid #667eea;
+        }
+
+        .task-item:hover {
+            background: #efefef;
+            transform: translateX(5px);
+        }
+
+        .task-item.completed {
+            opacity: 0.6;
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .priority-high {
+            border-left-color: #ff6b6b;
+        }
+
+        .priority-medium {
+            border-left-color: #ffa500;
+        }
+
+        .priority-low {
+            border-left-color: #51cf66;
+        }
+
+        .priority-tag {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .priority-tag.high {
+            background: #ffe0e0;
+            color: #d32f2f;
+        }
+
+        .priority-tag.medium {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .priority-tag.low {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin-right: 15px;
+            accent-color: #667eea;
+        }
+
+        .task-text {
+            flex: 1;
+            color: #333;
+            font-size: 16px;
+            word-break: break-word;
+        }
+
+        .delete-btn {
+            padding: 6px 12px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: #ee5a52;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+            font-size: 16px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .clear-all-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .clear-all-btn:hover {
+            background: #ee5a52;
+        }
+
+        /* Code Snippet Tab */
+        .snippet-container {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .snippet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .snippet-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .snippet-language {
+            font-size: 12px;
+            color: #999;
+            background: #e0e0e0;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .code-editor {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .code-editor textarea {
+            background: #282c34;
+            color: #abb2bf;
+            border: none;
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            outline: none;
+        }
+
+        .code-display {
+            background: #282c34;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .code-display pre {
+            margin: 0;
+        }
+
+        .code-display code {
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            color: #abb2bf;
+        }
+
+        .snippet-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        .btn-small:hover {
+            background: #5568d3;
+        }
+
+        .btn-copy {
+            background: #51cf66;
+        }
+
+        .btn-copy:hover {
+            background: #40c057;
+        }
+
+        .btn-delete {
+            background: #ff6b6b;
+        }
+
+        .btn-delete:hover {
+            background: #ee5a52;
+        }
+
+        .copy-feedback {
+            display: inline-block;
+            margin-left: 10px;
+            color: #51cf66;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Timer Tab */
+        .timer-section {
+            background: #f9f9f9;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .timer-display {
+            font-size: 72px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 25px;
+            font-family: 'Monaco', monospace;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .preset-btn {
+            padding: 12px 20px;
+            background: #f0f0f0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .preset-btn:hover, .preset-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .timer-input-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .timer-input {
+            width: 80px;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .timer-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Notes Tab */
+        .notes-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .note-editor {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Monaco', monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        .note-editor:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .note-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-save {
+            background: #51cf66;
+        }
+
+        .btn-save:hover {
+            background: #40c057;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            .tabs {
+                gap: 5px;
+            }
+
+            .tab-btn {
+                padding: 10px 15px;
+                font-size: 12px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .timer-display {
+                font-size: 48px;
+            }
+
+            .input-container {
+                flex-direction: column;
+            }
+
+            .task-item {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💻 Developer To-Do List</h1>
+        <p class="subtitle">Manage tasks, save code snippets, take notes, and track time</p>
+
+        <!-- Tabs Navigation -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="tasks">📋 Tasks</button>
+            <button class="tab-btn" data-tab="snippets">💾 Code Snippets</button>
+            <button class="tab-btn" data-tab="timer">⏱️ Timer</button>
+            <button class="tab-btn" data-tab="notes">📝 Notes</button>
+        </div>
+
+        <!-- Tasks Tab -->
+        <div id="tasks" class="tab-content active">
+            <div class="input-container">
+                <input 
+                    type="text" 
+                    id="taskInput" 
+                    placeholder="Add a new development task..."
+                    autocomplete="off"
+                >
+                <select id="prioritySelect" class="priority-select">
+                    <option value="low">Low Priority</option>
+                    <option value="medium" selected>Medium Priority</option>
+                    <option value="high">High Priority</option>
+                </select>
+                <button id="addBtn">Add Task</button>
+            </div>
+
+            <ul id="taskList"></ul>
+            
+            <div id="emptyMessage" class="empty-message">
+                No tasks yet. Add one to get started! 🎯
+            </div>
+
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number" id="totalCount">0</div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="completedCount">0</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="pendingCount">0</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="highPriorityCount">0</div>
+                    <div class="stat-label">High Priority</div>
+                </div>
+            </div>
+
+            <button class="clear-all-btn" id="clearAllBtn">Clear All Tasks</button>
+        </div>
+
+        <!-- Code Snippets Tab -->
+        <div id="snippets" class="tab-content">
+            <div class="input-container">
+                <input 
+                    type="text" 
+                    id="snippetTitle" 
+                    placeholder="Snippet title (e.g., Fetch API Call)..."
+                    autocomplete="off"
+                >
+                <select id="snippetLanguage" class="priority-select">
+                    <option value="javascript">JavaScript</option>
+                    <option value="python">Python</option>
+                    <option value="html">HTML</option>
+                    <option value="css">CSS</option>
+                    <option value="java">Java</option>
+                    <option value="cpp">C++</option>
+                    <option value="bash">Bash</option>
+                </select>
+                <button id="addSnippetBtn" class="btn-small" style="background: #667eea; padding: 12px 25px; font-size: 16px;">Add Snippet</button>
+            </div>
+
+            <div id="codeEditor" class="code-editor" style="display: none;">
+                <textarea id="snippetCode" placeholder="Paste your code here..."></textarea>
+            </div>
+
+            <div id="snippetsList" style="margin-top: 25px;"></div>
+        </div>
+
+        <!-- Timer Tab -->
+        <div id="timer" class="tab-content">
+            <div class="timer-section">
+                <div class="timer-display" id="timerDisplay">00:00:00</div>
+                
+                <div class="timer-controls">
+                    <button class="preset-btn" data-minutes="5">5 min</button>
+                    <button class="preset-btn" data-minutes="15">15 min</button>
+                    <button class="preset-btn" data-minutes="25">25 min (Pomodoro)</button>
+                    <button class="preset-btn" data-minutes="45">45 min</button>
+                    <button class="preset-btn" data-minutes="60">1 hour</button>
+                </div>
+
+                <div class="timer-input-group">
+                    <div>
+                        <input type="number" id="timerHours" class="timer-input" value="0" min="0" max="23">
+                        <div class="timer-label">Hours</div>
+                    </div>
+                    <div>
+                        <input type="number" id="timerMinutes" class="timer-input" value="0" min="0" max="59">
+                        <div class="timer-label">Minutes</div>
+                    </div>
+                    <div>
+                        <input type="number" id="timerSeconds" class="timer-input" value="0" min="0" max="59">
+                        <div class="timer-label">Seconds</div>
+                    </div>
+                </div>
+
+                <div class="timer-controls">
+                    <button id="timerStartBtn" class="btn-small" style="background: #51cf66; padding: 12px 30px; font-size: 16px;">▶ Start</button>
+                    <button id="timerPauseBtn" class="btn-small" style="background: #ffa500; padding: 12px 30px; font-size: 16px;">⏸ Pause</button>
+                    <button id="timerResetBtn" class="btn-small" style="background: #ff6b6b; padding: 12px 30px; font-size: 16px;">🔄 Reset</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes Tab -->
+        <div id="notes" class="tab-content">
+            <div class="notes-section">
+                <textarea 
+                    id="notesEditor" 
+                    class="note-editor" 
+                    placeholder="Write your development notes here...
+                    
+Tips:
+• Keep track of bugs you find
+• Document solutions and fixes
+• Write quick reminders
+• Paste error messages for reference"
+                ></textarea>
+                <div class="note-actions">
+                    <button id="notesAutoSaveBtn" class="btn-small btn-save">💾 Auto Save is ON</button>
+                    <button id="notesExportBtn" class="btn-small">📥 Export as Text</button>
+                    <button id="notesClearBtn" class="btn-small btn-delete">🗑️ Clear Notes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============== TASKS SECTION ==============
+        const taskInput = document.getElementById('taskInput');
+        const prioritySelect = document.getElementById('prioritySelect');
+        const addBtn = document.getElementById('addBtn');
+        const taskList = document.getElementById('taskList');
+        const emptyMessage = document.getElementById('emptyMessage');
+        const totalCount = document.getElementById('totalCount');
+        const completedCount = document.getElementById('completedCount');
+        const pendingCount = document.getElementById('pendingCount');
+        const highPriorityCount = document.getElementById('highPriorityCount');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+
+        const STORAGE_KEY = 'todoListTasks';
+        const SNIPPETS_KEY = 'codeSnippets';
+        const NOTES_KEY = 'devNotes';
+
+        // Load tasks from local storage on page load
+        function loadTasks() {
+            const tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            tasks.forEach(task => renderTask(task));
+            updateStats();
+        }
+
+        // Save tasks to local storage
+        function saveTasks() {
+            const tasks = Array.from(taskList.querySelectorAll('li')).map(li => ({
+                id: li.dataset.id,
+                text: li.querySelector('.task-text').textContent,
+                completed: li.classList.contains('completed'),
+                priority: li.dataset.priority
+            }));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+        }
+
+        // Render a single task
+        function renderTask(task) {
+            const li = document.createElement('li');
+            li.className = `task-item ${task.completed ? 'completed' : ''} priority-${task.priority}`;
+            li.dataset.id = task.id;
+            li.dataset.priority = task.priority;
+
+            li.innerHTML = `
+                <input 
+                    type="checkbox" 
+                    class="task-checkbox" 
+                    ${task.completed ? 'checked' : ''}
+                >
+                <span class="priority-tag ${task.priority}">${task.priority.toUpperCase()}</span>
+                <span class="task-text">${escapeHtml(task.text)}</span>
+                <button class="delete-btn">Delete</button>
+            `;
+
+            // Toggle completion
+            li.querySelector('.task-checkbox').addEventListener('change', () => {
+                li.classList.toggle('completed');
+                saveTasks();
+                updateStats();
+            });
+
+            // Delete task
+            li.querySelector('.delete-btn').addEventListener('click', () => {
+                li.remove();
+                saveTasks();
+                updateStats();
+            });
+
+            taskList.appendChild(li);
+        }
+
+        // Add a new task
+        function addTask() {
+            const text = taskInput.value.trim();
+            if (text === '') {
+                taskInput.focus();
+                return;
+            }
+
+            const task = {
+                id: Date.now().toString(),
+                text: text,
+                completed: false,
+                priority: prioritySelect.value
+            };
+
+            renderTask(task);
+            saveTasks();
+            updateStats();
+            taskInput.value = '';
+            taskInput.focus();
+        }
+
+        // Update statistics
+        function updateStats() {
+            const tasks = taskList.querySelectorAll('.task-item');
+            const completed = taskList.querySelectorAll('.task-item.completed').length;
+            const total = tasks.length;
+            const pending = total - completed;
+            const highPriority = taskList.querySelectorAll('.task-item[data-priority="high"]').length;
+
+            totalCount.textContent = total;
+            completedCount.textContent = completed;
+            pendingCount.textContent = pending;
+            highPriorityCount.textContent = highPriority;
+
+            emptyMessage.style.display = total === 0 ? 'block' : 'none';
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Clear all tasks
+        clearAllBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to delete all tasks?')) {
+                taskList.innerHTML = '';
+                localStorage.removeItem(STORAGE_KEY);
+                updateStats();
+            }
+        });
+
+        // Event listeners
+        addBtn.addEventListener('click', addTask);
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTask();
+        });
+
+        // ============== CODE SNIPPETS SECTION ==============
+        const snippetTitle = document.getElementById('snippetTitle');
+        const snippetLanguage = document.getElementById('snippetLanguage');
+        const addSnippetBtn = document.getElementById('addSnippetBtn');
+        const codeEditor = document.getElementById('codeEditor');
+        const snippetCode = document.getElementById('snippetCode');
+        const snippetsList = document.getElementById('snippetsList');
+
+        let editingSnippetId = null;
+
+        addSnippetBtn.addEventListener('click', () => {
+            const title = snippetTitle.value.trim();
+            if (!title) {
+                snippetTitle.focus();
+                return;
+            }
+            codeEditor.style.display = 'block';
+            snippetCode.focus();
+            addSnippetBtn.textContent = '✓ Save Snippet';
+            addSnippetBtn.style.background = '#51cf66';
+        });
+
+        function saveSnippet() {
+            const title = snippetTitle.value.trim();
+            const code = snippetCode.value.trim();
+            const language = snippetLanguage.value;
+
+            if (!title || !code) {
+                alert('Please fill in both title and code');
+                return;
+            }
+
+            const snippets = JSON.parse(localStorage.getItem(SNIPPETS_KEY)) || [];
+            
+            if (editingSnippetId) {
+                const index = snippets.findIndex(s => s.id === editingSnippetId);
+                snippets[index] = { id: editingSnippetId, title, code, language, date: new Date().toISOString() };
+                editingSnippetId = null;
+            } else {
+                snippets.push({
+                    id: Date.now().toString(),
+                    title,
+                    code,
+                    language,
+                    date: new Date().toISOString()
+                });
+            }
+
+            localStorage.setItem(SNIPPETS_KEY, JSON.stringify(snippets));
+            resetSnippetForm();
+            renderSnippets();
+        }
+
+        function resetSnippetForm() {
+            snippetTitle.value = '';
+            snippetCode.value = '';
+            codeEditor.style.display = 'none';
+            addSnippetBtn.textContent = 'Add Snippet';
+            addSnippetBtn.style.background = '#667eea';
+            editingSnippetId = null;
+        }
+
+        function renderSnippets() {
+            const snippets = JSON.parse(localStorage.getItem(SNIPPETS_KEY)) || [];
+            snippetsList.innerHTML = '';
+
+            snippets.forEach(snippet => {
+                const div = document.createElement('div');
+                div.className = 'snippet-container';
+                
+                const date = new Date(snippet.date).toLocaleDateString();
+                
+                div.innerHTML = `
+                    <div class="snippet-header">
+                        <div>
+                            <div class="snippet-title">${escapeHtml(snippet.title)}</div>
+                            <div style="font-size: 12px; color: #999; margin-top: 5px;">${date}</div>
+                        </div>
+                        <span class="snippet-language">${snippet.language.toUpperCase()}</span>
+                    </div>
+                    <div class="code-display">
+                        <pre><code class="language-${snippet.language}">${escapeHtml(snippet.code)}</code></pre>
+                    </div>
+                    <div class="snippet-actions">
+                        <button class="btn-small btn-copy" onclick="copyToClipboard('${snippet.id}')">📋 Copy</button>
+                        <button class="btn-small" onclick="editSnippet('${snippet.id}')">✏️ Edit</button>
+                        <button class="btn-small btn-delete" onclick="deleteSnippet('${snippet.id}')">🗑️ Delete</button>
+                        <span class="copy-feedback" id="feedback-${snippet.id}"></span>
+                    </div>
+                `;
+                
+                snippetsList.appendChild(div);
+            });
+
+            document.querySelectorAll('code').forEach(block => {
+                hljs.highlightElement(block);
+            });
+        }
+
+        window.copyToClipboard = function(id) {
+            const snippets = JSON.parse(localStorage.getItem(SNIPPETS_KEY)) || [];
+            const snippet = snippets.find(s => s.id === id);
+            navigator.clipboard.writeText(snippet.code).then(() => {
+                const feedback = document.getElementById(`feedback-${id}`);
+                feedback.textContent = 'Copied!';
+                setTimeout(() => {
+                    feedback.textContent = '';
+                }, 2000);
+            });
+        };
+
+        window.editSnippet = function(id) {
+            const snippets = JSON.parse(localStorage.getItem(SNIPPETS_KEY)) || [];
+            const snippet = snippets.find(s => s.id === id);
+            
+            snippetTitle.value = snippet.title;
+            snippetCode.value = snippet.code;
+            snippetLanguage.value = snippet.language;
+            codeEditor.style.display = 'block';
+            editingSnippetId = id;
+            addSnippetBtn.textContent = '✓ Update Snippet';
+            addSnippetBtn.style.background = '#51cf66';
+            snippetCode.focus();
+        };
+
+        window.deleteSnippet = function(id) {
+            if (confirm('Delete this snippet?')) {
+                const snippets = JSON.parse(localStorage.getItem(SNIPPETS_KEY)) || [];
+                const filtered = snippets.filter(s => s.id !== id);
+                localStorage.setItem(SNIPPETS_KEY, JSON.stringify(filtered));
+                renderSnippets();
+            }
+        };
+
+        snippetCode.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                saveSnippet();
+            }
+        });
+
+        // ============== TIMER SECTION ==============
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerHours = document.getElementById('timerHours');
+        const timerMinutes = document.getElementById('timerMinutes');
+        const timerSeconds = document.getElementById('timerSeconds');
+        const timerStartBtn = document.getElementById('timerStartBtn');
+        const timerPauseBtn = document.getElementById('timerPauseBtn');
+        const timerResetBtn = document.getElementById('timerResetBtn');
+        const presetBtns = document.querySelectorAll('.preset-btn');
+
+        let timerInterval = null;
+        let totalSeconds = 0;
+        let isRunning = false;
+
+        function updateDisplay() {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            timerDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            timerHours.value = hours;
+            timerMinutes.value = minutes;
+            timerSeconds.value = seconds;
+        }
+
+        function startTimer() {
+            if (isRunning) return;
+            
+            if (totalSeconds === 0) {
+                totalSeconds = (parseInt(timerHours.value) || 0) * 3600 + 
+                              (parseInt(timerMinutes.value) || 0) * 60 + 
+                              (parseInt(timerSeconds.value) || 0);
+            }
+
+            if (totalSeconds === 0) return;
+
+            isRunning = true;
+            timerStartBtn.disabled = true;
+
+            timerInterval = setInterval(() => {
+                totalSeconds--;
+                updateDisplay();
+
+                if (totalSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    isRunning = false;
+                    timerStartBtn.disabled = false;
+                    alert('⏰ Time\'s up!');
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                isRunning = false;
+                timerStartBtn.disabled = false;
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            totalSeconds = 0;
+            timerHours.value = 0;
+            timerMinutes.value = 0;
+            timerSeconds.value = 0;
+            updateDisplay();
+            timerStartBtn.disabled = false;
+        }
+
+        timerStartBtn.addEventListener('click', startTimer);
+        timerPauseBtn.addEventListener('click', pauseTimer);
+        timerResetBtn.addEventListener('click', resetTimer);
+
+        presetBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                presetBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const minutes = parseInt(btn.dataset.minutes);
+                totalSeconds = minutes * 60;
+                updateDisplay();
+            });
+        });
+
+        // ============== NOTES SECTION ==============
+        const notesEditor = document.getElementById('notesEditor');
+        const notesAutoSaveBtn = document.getElementById('notesAutoSaveBtn');
+        const notesExportBtn = document.getElementById('notesExportBtn');
+        const notesClearBtn = document.getElementById('notesClearBtn');
+
+        let autoSaveEnabled = true;
+
+        function loadNotes() {
+            const notes = localStorage.getItem(NOTES_KEY) || '';
+            notesEditor.value = notes;
+        }
+
+        function saveNotes() {
+            localStorage.setItem(NOTES_KEY, notesEditor.value);
+        }
+
+        notesEditor.addEventListener('input', () => {
+            if (autoSaveEnabled) {
+                saveNotes();
+            }
+        });
+
+        notesAutoSaveBtn.addEventListener('click', () => {
+            autoSaveEnabled = !autoSaveEnabled;
+            notesAutoSaveBtn.textContent = autoSaveEnabled ? '💾 Auto Save is ON' : '💾 Auto Save is OFF';
+            notesAutoSaveBtn.style.background = autoSaveEnabled ? '#51cf66' : '#ffa500';
+            if (autoSaveEnabled) saveNotes();
+        });
+
+        notesExportBtn.addEventListener('click', () => {
+            const text = notesEditor.value;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dev-notes-${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        notesClearBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear all notes?')) {
+                notesEditor.value = '';
+                localStorage.removeItem(NOTES_KEY);
+            }
+        });
+
+        // ============== TAB NAVIGATION ==============
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabName = btn.dataset.tab;
+                
+                // Hide all tabs
+                tabContents.forEach(content => content.classList.remove('active'));
+                tabBtns.forEach(b => b.classList.remove('active'));
+
+                // Show selected tab
+                document.getElementById(tabName).classList.add('active');
+                btn.classList.add('active');
+            });
+        });
+
+        // Initialize
+        loadTasks();
+        renderSnippets();
+        loadNotes();
+        updateDisplay();
+    </script>
+</body>
+</html>
